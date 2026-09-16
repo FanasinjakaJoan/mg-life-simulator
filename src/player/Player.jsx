@@ -5,6 +5,7 @@ import { KEY, isDown, readMoveAxis, wasPressed } from '../state/input.js'
 import { cameraState } from '../state/cameraState.js'
 import { useGameStore } from '../state/useGameStore.js'
 import { placePlayer, playerRegistry, setPlayerBody } from '../state/playerRegistry.js'
+import { getBiome } from '../world/biomes.js'
 import { PLAYER } from '../config/gameConfig.js'
 import { terrainHeight } from '../world/terrain.js'
 import { damp } from '../world/noise.js'
@@ -35,7 +36,9 @@ export function Player() {
 
   /** Feet on the terrain surface: the capsule centre sits one offset higher. */
   const spawn = useMemo(() => {
-    const [x, configuredY, z] = PLAYER.spawn
+    const biomeId = useGameStore.getState().selectedBiome
+    const [bx, bz] = getBiome(biomeId).spawn
+    const [x, configuredY, z] = biomeId ? [bx, 0, bz] : PLAYER.spawn
     const groundY = terrainHeight(x, z)
     const y = configuredY === 0 ? groundY + PLAYER.halfHeight + PLAYER.radius + 0.2 : configuredY
     return [x, y, z]

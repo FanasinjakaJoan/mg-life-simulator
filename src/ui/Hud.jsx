@@ -7,16 +7,16 @@ import { useGameStore } from '../state/useGameStore.js'
  */
 
 const CONTROL_ROWS = [
-  ['W A S D / Z Q S D / ↑←↓→', 'Move'],
-  ['Shift', 'Sprint'],
-  ['Space', 'Jump'],
-  ['Mouse', 'Look around'],
+  ['W A S D / Z Q S D / ↑←↓→', 'Marcher'],
+  ['Shift', 'Courir'],
+  ['Space', 'Sauter'],
+  ['Mouse', 'Regarder'],
   ['Wheel', 'Zoom'],
-  ['F', 'Enter / exit vehicle'],
-  ['W / S', 'Accelerate / brake (driving)'],
-  ['Space', 'Handbrake (driving)'],
-  ['R', 'Reset vehicle'],
-  ['H', 'Toggle this panel'],
+  ['F', 'Monter / descendre'],
+  ['W / S', 'Accélérer / freiner'],
+  ['Space', 'Frein à main'],
+  ['R', 'Replacer le taxi'],
+  ['H', 'Afficher les commandes'],
 ]
 
 export function Hud() {
@@ -59,7 +59,7 @@ export function Hud() {
             <span className="h-full w-1/3 bg-green-600" />
           </span>
           <h1 className="text-[13px] font-semibold tracking-[0.2em] text-white/90 uppercase">
-            MG Life Simulator
+            Madagascar · The Red Island
           </h1>
           <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold tracking-widest text-amber-200 uppercase">
             Alpha
@@ -87,7 +87,7 @@ export function Hud() {
             </div>
           </div>
           <span className="rounded-full bg-slate-950/45 px-3 py-1 text-[11px] text-white/70 backdrop-blur-sm">
-            Press <kbd className="font-mono text-white">F</kbd> to get out
+            Appuyez sur <kbd className="font-mono text-white">F</kbd> pour descendre
           </span>
         </div>
       ) : null}
@@ -100,7 +100,7 @@ export function Hud() {
               F
             </kbd>
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-medium">Drive the taxi-brousse</span>
+              <span className="text-sm font-medium">Conduire le taxi-brousse</span>
               <span className="text-[11px] text-white/60">
                 {nearbyVehicleName}
                 {Number.isFinite(nearbyDistance) ? ` — ${nearbyDistance.toFixed(1)} m` : ''}
@@ -128,7 +128,7 @@ export function Hud() {
             onClick={toggleHelp}
             className="pointer-events-auto rounded-full border border-white/10 bg-slate-950/40 px-3 py-1 text-[10px] tracking-widest text-white/50 uppercase transition hover:bg-slate-950/70 hover:text-white/80"
           >
-            {showHelp ? 'Hide controls (H)' : 'Show controls (H)'}
+            {showHelp ? 'Masquer les commandes (H)' : 'Commandes (H)'}
           </button>
         </div>
       </div>

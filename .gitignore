@@ -25,3 +25,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Local asset-generation environment
+.venv/
+
+# Offline heightmaps (up to 512 MiB; regenerate from source)
+generated/

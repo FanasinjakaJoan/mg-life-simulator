@@ -1,12 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="12" fill="#0b1220" />
-  <!-- Malagasy flag stripes -->
-  <rect x="12" y="12" width="12" height="40" fill="#f2f2f2" />
-  <rect x="24" y="12" width="28" height="20" fill="#a8342a" />
-  <rect x="24" y="32" width="28" height="20" fill="#2f7a45" />
-  <!-- Baobab-ish silhouette -->
-  <g fill="#0b1220" opacity="0.55">
-    <rect x="49" y="30" width="3" height="22" />
-    <circle cx="50.5" cy="27" r="8" />
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="13" fill="#faf9f2"/><g fill="none" stroke="#ab5c40" stroke-width="2.6" stroke-linejoin="round"><path d="m8 48 16-29 10 17 8-13 15 25H8Z"/><path d="m17 33 7 5 7-7m7 8 4 3 5-6"/></g><circle cx="44" cy="13" r="3" fill="#ab5c40"/></svg>

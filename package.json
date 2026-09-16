@@ -1,7 +1,7 @@
 {
   "name": "mg-life-simulator",
   "private": true,
-  "version": "0.1.0-alpha",
+  "version": "0.2.0-alpha",
   "type": "module",
   "description": "3D open-world life simulator set on the island of Madagascar (MVP)",
   "scripts": {
@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173 --strictPort",
     "lint": "eslint src scripts",
-    "test": "node scripts/check-terrain.mjs && node scripts/check-scene.mjs && node scripts/smoke-world.mjs && node scripts/physics-sim.mjs"
+    "test": "node scripts/check-terrain.mjs && node scripts/check-scene.mjs && node scripts/smoke-world.mjs && node scripts/physics-sim.mjs && node scripts/check-biomes.mjs",
+    "test:ui": "node scripts/check-atlas-ui.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
