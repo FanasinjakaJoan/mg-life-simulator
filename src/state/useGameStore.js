@@ -10,6 +10,8 @@ import { create } from 'zustand'
 export const useGameStore = create((set, get) => ({
   /** 'onFoot' | 'driving' */
   mode: 'onFoot',
+  selectedBiome: 'highlands',
+  currentBiome: 'highlands',
   activeVehicleId: null,
   /** Nearest interactable vehicle id, or null. */
   nearbyVehicleId: null,

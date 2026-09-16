@@ -1,14 +1,25 @@
-# MG Life Simulator — Alpha
+# Madagascar — The Red Island · Alpha 0.2
 
 > Un jeu vidéo de simulation de vie en monde ouvert inspiré de GTA, se déroulant sur la carte de Madagascar.
 >
 > A 3D open-world life-sim prototype in the browser: a procedurally generated Malagasy
 > island, a red-laterite village with *gargotes*, and a drivable *taxi-brousse*.
 
-Everything in this repository is procedural — **there is not a single binary asset**.
-The island, props, character, vehicles, sky, sea and clouds are all generated from code at
-load time (geometry, canvas textures, shaders), which keeps the whole game a couple of
-hundred kilobytes of source.
+## Nouveauté : l’atlas des sept mondes
+
+L’application s’ouvre sur un **atlas interactif de Madagascar** : sept biomes,
+relief illustré sur un contour géographique, fiches de région, calques, itinéraire
+et carnet de voyage sauvegardé localement. **Explorer cette région** charge le
+prototype 3D et place le joueur dans le biome choisi. **M** revient à l’atlas.
+
+Les modèles 3D restent procéduraux. L’atlas ajoute des images d’ambiance générées
+par IA, des données de côte Natural Earth et des polices locales. La scène jouable
+reste un prototype stylisé de 760 m, distinct du relief géographique illustré :
+elle ne prétend pas être un monde AAA à l’échelle réelle.
+
+Un **générateur de heightmap 16K / 16 bits** est fourni hors ligne, sans inclure
+le raster de 512 MiB dans Git. Détails, limites, sources et commandes :
+[Documentation géographique](docs/geography.md).
 
 ## Quick start
 
@@ -25,7 +36,8 @@ Other scripts:
 | `npm run build` | production build into `dist/` |
 | `npm run preview` | serve the production build (4173) |
 | `npm run lint` | ESLint — `no-undef` + `react-hooks/rules-of-hooks` |
-| `npm test` | terrain + world + physics checks (see *Verification*) |
+| `npm test` | terrain + world + physics + seven-biome checks |
+| `npm run test:ui` | Playwright: atlas navigation, journal persistence, layers, 3D entry/return, mobile |
 
 ## Controls
 
@@ -39,6 +51,7 @@ Other scripts:
 | `A` / `D` | steer while driving |
 | `R` | reset the vehicle (right it, unstick it) |
 | `H` | show/hide the controls legend |
+| `M` | return to the atlas (also while pointer-locked) |
 | `F3` | Rapier collider wireframes |
 | Mouse | orbit the camera · wheel zooms · click the world to capture the pointer (`Esc` releases) |
 

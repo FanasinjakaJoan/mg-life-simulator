@@ -89,6 +89,10 @@ export function attachInput() {
   window.addEventListener('blur', onBlur)
   return () => {
     attached = false
+    onBlur()
+    mouse.dx = 0
+    mouse.dy = 0
+    mouse.wheel = 0
     window.removeEventListener('keydown', onKeyDown)
     window.removeEventListener('keyup', onKeyUp)
     window.removeEventListener('mousemove', onMouseMove)

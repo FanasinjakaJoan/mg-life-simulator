@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { SKY_HORIZON, Clouds, SkyDome } from '../world/Sky.jsx'
 import { Ocean } from '../world/Ocean.jsx'
+import { BiomeScenery, BiomeWeather } from '../world/BiomeScenery.jsx'
 import { Terrain } from '../world/Terrain.jsx'
 import { Roads } from '../world/Roads.jsx'
 import { Props } from '../world/Props.jsx'
@@ -27,6 +28,7 @@ export function Scene({ physicsDebug = false }) {
 
       <SkyDome />
       <Clouds />
+      <BiomeWeather />
       <SunLight />
       <hemisphereLight
         color={SUN.ambient.skyColor}
@@ -37,6 +39,7 @@ export function Scene({ physicsDebug = false }) {
       <PhysicsWorld debug={physicsDebug}>
         <Terrain />
         <Props />
+        <BiomeScenery />
         <Player />
         {VEHICLE_SPAWNS.map((spawn) => (
           <TaxiBe key={spawn.id} spawn={spawn} />

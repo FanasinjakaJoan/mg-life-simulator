@@ -24,5 +24,14 @@ export default defineConfig({
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 2500,
+    rollupOptions: {
+      output: {
+        // Keep the physics WASM and renderer out of the lightweight atlas entry.
+        manualChunks(id) {
+          if (id.includes('/@dimforge/rapier3d')) return 'rapier'
+          if (id.includes('/node_modules/three/')) return 'three'
+        },
+      },
+    },
   },
 })

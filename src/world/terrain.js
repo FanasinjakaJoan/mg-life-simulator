@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { biomeAt, getBiome } from './biomes.js'
 import { PALETTE, WORLD } from '../config/gameConfig.js'
 import { clamp, fbm, hash2, smoothstep } from './noise.js'
 import { baseHeight, baseNormal } from './terrainMath.js'
@@ -109,18 +110,15 @@ export function surfaceColor(x, z, height, slope, out = COLOR) {
     return out
   }
 
-  // Base: laterite red vs. dry savanna grass.
-  const grassiness = clamp(
-    smoothstep(0.05, 0.85, wetness) * 0.55 + smoothstep(4, 26, height) * 0.45 + patch * 0.18,
-    0,
-    1,
-  )
-  out.set(PALETTE.laterite).lerp(new THREE.Color(PALETTE.dryGrass), grassiness * 0.75)
-
-  // Highlands turn green (rainforest belt).
-  if (height > 18) {
-    out.lerp(new THREE.Color(PALETTE.jungle), smoothstep(18, 34, height) * 0.8)
+  // Seven longitudinal/climatic regions, rather than generic tropical grass.
+  const biome = biomeAt(x, z)
+  const ground = getBiome(biome)
+  const accent = {
+    rainforest: '#345535', highlands: '#b36b42', baobabs: '#bda765',
+    spiny: '#cb9460', volcanic: '#4f6650', coast: '#c8bf9b', rivers: '#668354',
   }
+  const blend = clamp(.26 + wetness * .3 + patch * .23, .05, .65)
+  out.set(ground.soil).lerp(new THREE.Color(accent[biome]), blend)
 
   // Steep faces expose rock and raw laterite.
   if (slope > 0.42) {

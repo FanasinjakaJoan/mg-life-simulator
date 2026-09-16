@@ -113,7 +113,20 @@ export function baseHeight(x, z) {
   const landMask = smoothstep(0.78, 1.02, field)
   const relief = (hills + detail) * (1 - landMask)
 
-  return profile + relief + mountain
+  // Three compressed massifs. Geographic altitudes live in the atlas data;
+  // these metre-scale forms keep walking and driving practical in WebGL.
+  const peak = (cx, cz, spread, amplitude) => amplitude * Math.exp(-((x-cx)**2+(z-cz)**2)/(spread*spread))
+  const massifs = (peak(-15,-220,33,27) + peak(-5,-35,30,14) + peak(-35,130,29,24)) * (1-landMask)
+  let height = profile + relief + mountain + massifs
+  // A short compressed Pangalanes channel, wet surface rendered separately.
+  // The taper prevents an abrupt cut at the ends and at the shore.
+  if (z > 20 && z < 145) {
+    const channelX = 182 + Math.sin(z * .03) * 8
+    const edge = 1-smoothstep(3.5,9,Math.abs(x-channelX))
+    const ends = smoothstep(20,28,z)*(1-smoothstep(136,145,z))
+    if(height>5) height += (5-height)*edge*ends
+  }
+  return height
 }
 
 /** Elevation of the ground at a point (raw terrain, roads excluded). */
