@@ -17,6 +17,41 @@ par IA, des données de côte Natural Earth et des polices locales. La scène jo
 reste un prototype stylisé de 760 m, distinct du relief géographique illustré :
 elle ne prétend pas être un monde AAA à l’échelle réelle.
 
+## Rendu « réel » : la chaîne d’image
+
+L’affichage passe par une pipeline type moteur de jeu, entièrement générée à
+l’exécution (zéro asset externe) :
+
+* **Matériaux PBR** — chaque surface (latérite, tapia, peinture de taxi) est un
+  `MeshStandardMaterial`/`MeshPhysicalMaterial` (clearcoat sur la carrosserie)
+  éclairé par l’environnement, avec un grain procédural tuilable comme bump +
+  roughness map (`world/proceduralTextures.js`).
+* **Éclairage image-based (IBL)** — le dôme de ciel est rendu une fois dans une
+  carte PMREM (`world/Environment.jsx`) : lumière ambiante douce du ciel,
+  rebond rouge de la terre, et un soleil HDR qui se reflète réellement dans la
+  peinture, le vitrage et l’eau.
+* **Ombres portées dynamiques** — une ombre directionnelle PCF-soft dont le
+  frustrum suit le joueur (60 m) avec une résolution dépendant de la qualité
+  (1024 → 4096 px).
+* **Post-traitement** (`components/PostFX.jsx`) — bloom HDR sur le soleil et les
+  reflets, opérateur cinématique ACES (identique à celui du renderer, pour que
+  tous les préréglages gradent pareil), vignette et grain de film.
+* **Eau réaliste** — l’océan sample le gradient du ciel dans la direction
+  réfléchie (fresnel), avec scintillement spéculaire serré, micro-vagues et
+  écume de crête.
+* **Performance adaptative** — un `PerformanceMonitor` ajuste en continu la
+  résolution interne (pixel ratio) dans la plage du préréglage actif, sans
+  jamais toucher à la qualité des ombres ni au pipeline.
+
+Trois préréglages, persistés localement, se basculent avec **P** ou le bouton
+« Qualité » du HUD (qui affiche aussi la résolution interne effective) :
+
+| Qualité | Pixel ratio | Ombres | Post-traitement |
+| --- | --- | --- | --- |
+| Basse | 0,75 – 1,0 | 1024 px | non |
+| Moyenne | 1,0 – 1,5 | 2048 px | oui |
+| Élevée (défaut) | 1,0 – 2,0 | 4096 px | oui |
+
 Un **générateur de heightmap 16K / 16 bits** est fourni hors ligne, sans inclure
 le raster de 512 MiB dans Git. Détails, limites, sources et commandes :
 [Documentation géographique](docs/geography.md).
@@ -37,7 +72,7 @@ Other scripts:
 | `npm run preview` | serve the production build (4173) |
 | `npm run lint` | ESLint — `no-undef` + `react-hooks/rules-of-hooks` |
 | `npm test` | terrain + world + physics + seven-biome checks |
-| `npm run test:ui` | Playwright: atlas navigation, journal persistence, layers, 3D entry/return, mobile |
+| `npm run test:ui` | Playwright: atlas navigation, journal persistence, layers, 3D entry/return, quality toggle, mobile |
 
 ## Controls
 
@@ -51,6 +86,7 @@ Other scripts:
 | `A` / `D` | steer while driving |
 | `R` | reset the vehicle (right it, unstick it) |
 | `H` | show/hide the controls legend |
+| `P` | cycle the graphics quality (Basse / Moyenne / Élevée) |
 | `M` | return to the atlas (also while pointer-locked) |
 | `F3` | Rapier collider wireframes |
 | Mouse | orbit the camera · wheel zooms · click the world to capture the pointer (`Esc` releases) |
@@ -63,7 +99,9 @@ Other scripts:
 2. **Madagascar** — a 760 m procedurally generated island (red laterite soil, dry tapia
    grass, highland rainforest), a coastal village of 40 traditional houses, 15 *gargotes*,
    16 street lamps, road signs, palms, trees, ravenala, boulders, bushes and 7 zebu;
-   tropical sun, gradient sky with drifting cumulus, and a shader ocean.
+   tropical sun, gradient sky with drifting cumulus, and a shader ocean. Rendered with a
+   PBR + image-based-lighting pipeline, real-time soft shadows and a bloom/ACES/vignette
+   post stack (see [Rendu « réel »](#rendu-r%C3%A9el--la-cha%C3%AEne-dimage)).
 3. **Vehicles** — two blocky white-and-blue *taxi-brousse* minibuses parked on the RN7
    roadside, four-wheel steering visuals, arcade physics with gravity, downforce, lateral
    grip and a parking brake; press `F` to get in and out.
@@ -87,12 +125,14 @@ src/
 │   ├─ roadNetwork.js        RN7, the market street, the beach road, the plaza
 │   ├─ layout.js             deterministic placement of every prop
 │   ├─ propGeometry.js, geometryUtils.js         merged, vertex-coloured prop geometry
+│   ├─ proceduralTextures.js tileable grain maps (bump + roughness), canvas-generated
+│   ├─ Environment.jsx       one-time PMREM image-based lighting from the sky dome
 │   └─ Terrain/Ocean/Sky/Roads/Props.jsx         the React/three layers on top
 ├─ player/                   playerController.js (pure maths) + Player.jsx (Rapier body) + PlayerModel.jsx
 ├─ vehicles/                 vehicleController.js (pure maths) + TaxiBe.jsx + TaxiBeModel.jsx + vehicleGeometry.js
 ├─ camera/ThirdPersonCamera.jsx
 ├─ game/                     Scene.jsx (composition) + InteractionSystem.jsx (F, prompt, input edges)
-├─ components/PhysicsWorld.jsx
+├─ components/PhysicsWorld.jsx + PostFX.jsx (bloom/ACES/vignette/grain)
 └─ ui/                       Hud.jsx, StartOverlay.jsx, ErrorOverlay.jsx
 ```
 

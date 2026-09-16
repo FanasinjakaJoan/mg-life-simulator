@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { QUALITY } from '../config/gameConfig.js'
 import { useGameStore } from '../state/useGameStore.js'
 
 /**
@@ -16,6 +17,7 @@ const CONTROL_ROWS = [
   ['W / S', 'Accélérer / freiner'],
   ['Space', 'Frein à main'],
   ['R', 'Replacer le taxi'],
+  ['P', 'Qualité graphique'],
   ['H', 'Afficher les commandes'],
 ]
 
@@ -149,6 +151,9 @@ function FpsReadout() {
   const [fps, setFps] = useState(0)
   const frames = useRef(0)
   const last = useRef(performance.now())
+  const quality = useGameStore((state) => state.quality)
+  const effectiveDpr = useGameStore((state) => state.effectiveDpr)
+  const cycleQuality = useGameStore((state) => state.cycleQuality)
 
   useEffect(() => {
     let raf = 0
@@ -167,10 +172,25 @@ function FpsReadout() {
   }, [])
 
   return (
-    <div className="absolute top-4 right-4 flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/45 px-3 py-1 font-mono text-[11px] text-white/60 backdrop-blur-sm">
-      <span className={fps >= 50 ? 'text-emerald-300' : fps >= 30 ? 'text-amber-300' : 'text-red-300'}>
-        {fps} FPS
-      </span>
+    <div className="absolute top-4 right-4 flex items-center gap-2">
+      {/* Quality selector: cycles Basse -> Moyenne -> Élevée (also key P).
+          Shows the effective internal resolution the adaptive governor
+          picked within the preset's band. */}
+      <button
+        type="button"
+        onClick={cycleQuality}
+        title="Changer la qualité graphique (touche P)"
+        className="pointer-events-auto rounded-full border border-white/10 bg-slate-950/45 px-3 py-1 font-mono text-[11px] text-white/60 backdrop-blur-sm transition hover:bg-slate-950/70 hover:text-white/90"
+      >
+        <span className="text-white/40">Qualité</span>{' '}
+        <span className="text-amber-200/90">{QUALITY[quality].label}</span>
+        <span className="ml-1.5 text-white/40">{effectiveDpr.toFixed(2)}×</span>
+      </button>
+      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/45 px-3 py-1 font-mono text-[11px] text-white/60 backdrop-blur-sm">
+        <span className={fps >= 50 ? 'text-emerald-300' : fps >= 30 ? 'text-amber-300' : 'text-red-300'}>
+          {fps} FPS
+        </span>
+      </div>
     </div>
   )
 }

@@ -11,7 +11,9 @@ import { Player } from '../player/Player.jsx'
 import { TaxiBe } from '../vehicles/TaxiBe.jsx'
 import { ThirdPersonCamera } from '../camera/ThirdPersonCamera.jsx'
 import { InteractionSystem } from './InteractionSystem.jsx'
-import { SUN, VEHICLE_SPAWNS, WORLD } from '../config/gameConfig.js'
+import { IBL } from '../world/Environment.jsx'
+import { PostFX } from '../components/PostFX.jsx'
+import { QUALITY, SUN, VEHICLE_SPAWNS, WORLD } from '../config/gameConfig.js'
 import { getPlayerPosition } from '../state/playerRegistry.js'
 import { getVehicle } from '../state/vehicleRegistry.js'
 import { useGameStore } from '../state/useGameStore.js'
@@ -21,6 +23,9 @@ import { useGameStore } from '../state/useGameStore.js'
  * system that needs to run inside the render/physics loop.
  */
 export function Scene({ physicsDebug = false }) {
+  const quality = useGameStore((state) => state.quality)
+  const shadowMapSize = QUALITY[quality].shadowMapSize
+
   return (
     <>
       <color attach="background" args={[SKY_HORIZON]} />
@@ -29,7 +34,10 @@ export function Scene({ physicsDebug = false }) {
       <SkyDome />
       <Clouds />
       <BiomeWeather />
-      <SunLight />
+      <IBL intensity={0.5} />
+      {/* Keyed on quality: changing the shadow map size requires a fresh
+          shadow map, and remounting the light is the clean way to do it. */}
+      <SunLight key={`sun-${quality}`} mapSize={shadowMapSize} />
       <hemisphereLight
         color={SUN.ambient.skyColor}
         groundColor={SUN.ambient.groundColor}
@@ -55,6 +63,9 @@ export function Scene({ physicsDebug = false }) {
       <Roads />
       <Ocean sunDirection={SUN.direction} />
 
+      {/* Image post pipeline (bloom -> ACES -> vignette -> grain). On the
+          "low" preset this renders null and the plain renderer path applies. */}
+      <PostFX />
       <ReadySignal />
     </>
   )
@@ -64,7 +75,7 @@ export function Scene({ physicsDebug = false }) {
  * Directional sun whose shadow frustum follows the player, so a 60 m shadow box
  * stays crisp across the whole 620 m island.
  */
-function SunLight() {
+function SunLight({ mapSize = SUN.shadow.mapSize }) {
   const lightRef = useRef(null)
   const targetRef = useRef(null)
   const scratch = useRef({ x: 0, y: 0, z: 0 })
@@ -110,8 +121,8 @@ function SunLight() {
         color={SUN.color}
         intensity={SUN.intensity}
         castShadow
-        shadow-mapSize-width={SUN.shadow.mapSize}
-        shadow-mapSize-height={SUN.shadow.mapSize}
+        shadow-mapSize-width={mapSize}
+        shadow-mapSize-height={mapSize}
         shadow-camera-left={-SUN.shadow.size}
         shadow-camera-right={SUN.shadow.size}
         shadow-camera-top={SUN.shadow.size}

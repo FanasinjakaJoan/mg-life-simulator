@@ -133,7 +133,9 @@ export const SUN = {
   ambient: {
     skyColor: '#bcd9f2',
     groundColor: '#6b4a2f', // light bouncing off the red laterite
-    intensity: 0.55,
+    // Kept modest: the IBL environment map (world/Environment.jsx) supplies
+    // most of the ambient light, so a stronger hemisphere term over-exposes.
+    intensity: 0.38,
   },
   shadow: {
     mapSize: 2048,
@@ -143,6 +145,46 @@ export const SUN = {
     normalBias: 0.05,
   },
 }
+
+/**
+ * Quality presets: the pixel-ratio range the adaptive governor may roam in,
+ * the shadow-map resolution and whether the post-processing chain (bloom,
+ * tone mapping, vignette, grain) is active.
+ *
+ * `dprMin`/`dprMax` are not the whole story - drei's PerformanceMonitor
+ * nudges the effective pixel ratio up and down inside that range at runtime,
+ * so a slow machine gets a lower internal resolution while keeping the full
+ * image quality (shadows, IBL) of its tier.
+ */
+export const QUALITY = {
+  low: {
+    label: 'Basse',
+    dprMin: 0.75,
+    dprMax: 1,
+    shadowMapSize: 1024,
+    post: false,
+  },
+  medium: {
+    label: 'Moyenne',
+    dprMin: 1,
+    dprMax: 1.5,
+    shadowMapSize: 2048,
+    post: true,
+    bloom: 0.3,
+  },
+  high: {
+    label: 'Élevée',
+    dprMin: 1,
+    dprMax: 2,
+    shadowMapSize: 4096,
+    post: true,
+    bloom: 0.45,
+  },
+}
+
+export const QUALITY_ORDER = ['low', 'medium', 'high']
+export const QUALITY_DEFAULT = 'high'
+export const QUALITY_STORAGE_KEY = 'madagascar-quality'
 
 /**
  * Madagascar palette: red laterite soil, dry tapia grass, highland rainforest,

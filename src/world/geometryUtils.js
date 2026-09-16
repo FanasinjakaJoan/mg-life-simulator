@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { getGrainTexture } from './proceduralTextures.js'
 
 /**
  * Geometry helpers that turn a prop definition into ONE merged, vertex-coloured
@@ -112,16 +113,25 @@ export function cone(radius, height, color, options, segments = 6) {
   return transform(geometry, options)
 }
 
-/** Shared materials for every vertex-coloured prop. */
+/**
+ * Shared materials for every vertex-coloured prop.
+ *
+ * The grain map adds tapia-wall relief (bump) and matte variation (roughness).
+ * It is skipped under Node so the headless smoke test can still build props.
+ */
+const grain = typeof document !== 'undefined' ? getGrainTexture(128, 1, 0.72, 1, 29) : null
+
 export const PROP_MATERIAL = new THREE.MeshStandardMaterial({
   vertexColors: true,
-  roughness: 0.82,
+  roughness: 0.85,
   metalness: 0.02,
   flatShading: false,
+  ...(grain ? { bumpMap: grain, bumpScale: 0.05, roughnessMap: grain, envMapIntensity: 0.45 } : {}),
 })
 
 export const PROP_MATERIAL_ROUGH = new THREE.MeshStandardMaterial({
   vertexColors: true,
-  roughness: 0.95,
+  roughness: 0.98,
   metalness: 0,
+  ...(grain ? { bumpMap: grain, bumpScale: 0.03, roughnessMap: grain, envMapIntensity: 0.3 } : {}),
 })
