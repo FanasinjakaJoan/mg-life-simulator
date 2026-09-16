@@ -1,0 +1,32 @@
+{
+  "name": "mg-life-simulator",
+  "private": true,
+  "version": "0.1.0-alpha",
+  "type": "module",
+  "description": "3D open-world life simulator set on the island of Madagascar (MVP)",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173 --strictPort",
+    "lint": "eslint src scripts",
+    "test": "node scripts/check-terrain.mjs && node scripts/check-scene.mjs && node scripts/smoke-world.mjs && node scripts/physics-sim.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "@react-three/rapier": "^2.2.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "^0.186.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "playwright": "^1.63.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^7.3.6"
+  }
+}
