@@ -42,13 +42,16 @@ export function Scene({ physicsDebug = false }) {
           <TaxiBe key={spawn.id} spawn={spawn} />
         ))}
         <InteractionSystem />
+        {/* Inside the physics world on purpose: the rig ray-casts against it to
+            keep buildings from blocking the view, and `useRapier()` throws
+            outside <Physics>. */}
+        <ThirdPersonCamera />
       </PhysicsWorld>
 
-      {/* Visual-only layers. */}
+      {/* Visual-only layers - no physics, no rapier context needed. */}
       <Roads />
       <Ocean sunDirection={SUN.direction} />
 
-      <ThirdPersonCamera />
       <ReadySignal />
     </>
   )

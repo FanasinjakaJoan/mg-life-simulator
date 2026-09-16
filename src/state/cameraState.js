@@ -6,7 +6,11 @@
  * frame without causing re-renders.
  */
 export const cameraState = {
-  yaw: Math.PI,
+  /**
+   * 0 looks toward -Z, which is where the player spawns facing: the village
+   * plaza and the two parked taxi-bés. The opening shot should show the game.
+   */
+  yaw: 0,
   pitch: 0.28,
   distance: 6.2,
   /** Orbit pivot, kept in sync by the camera rig for debugging / effects. */
