@@ -2,14 +2,18 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { PALETTE, WORLD } from '../config/gameConfig.js'
+import { SKY_HORIZON } from './Sky.jsx'
 
 /**
  * Ocean surface.
  *
- * A single large plane with a hand-written shader: two crossed sine waves for
- * displacement, an analytic normal for the sun glint, a fresnel blend between
- * turquoise shallows and deep blue, and a manual distance haze that matches the
- * sky (so the horizon is seamless without pulling in three's fog chunks).
+ * A single large plane with a hand-written shader, in the "cheap real water"
+ * recipe:
+ *  - three travelling sine swells plus a fine ripple normal perturbation;
+ *  - a fresnel-weighted reflection of the procedural sky gradient (sampled in
+ *    the reflected direction, no cube map needed) with the sun added in;
+ *  - a tight specular sparkle on top of a wider sun glint;
+ *  - crest foam and a distance haze that matches the sky (seamless horizon).
  */
 
 const VERTEX = /* glsl */ `
@@ -45,6 +49,9 @@ const VERTEX = /* glsl */ `
 const FRAGMENT = /* glsl */ `
   uniform vec3 uShallow;
   uniform vec3 uDeep;
+  uniform vec3 uZenith;
+  uniform vec3 uHorizon;
+  uniform vec3 uSunColor;
   uniform vec3 uSunDirection;
   uniform vec3 uHazeColor;
   uniform float uFogNear;
@@ -56,18 +63,37 @@ const FRAGMENT = /* glsl */ `
 
   void main() {
     vec3 normal = normalize(vNormal);
-    vec3 viewDir = normalize(cameraPosition - vWorldPos);
 
-    float fresnel = pow(1.0 - clamp(dot(normal, viewDir), 0.0, 1.0), 3.0);
+    // Fine ripple detail on top of the analytic swell normal.
+    float rippleA = cos(vWorldPos.x * 2.1 + uTime * 1.6) - cos(vWorldPos.z * 1.7 - uTime * 1.2);
+    float rippleB = cos(vWorldPos.z * 2.4 + uTime * 1.5) - cos(vWorldPos.x * 1.9 - uTime * 1.8);
+    normal = normalize(normal + vec3(rippleA, 0.0, rippleB) * 0.016);
+
+    vec3 viewDir = normalize(cameraPosition - vWorldPos);
+    vec3 sunDir = normalize(uSunDirection);
+
+    // Fresnel (Schlick, base reflectance ~0.02 like real sea water).
+    float fresnel = 0.02 + 0.98 * pow(1.0 - clamp(dot(normal, viewDir), 0.0, 1.0), 3.0);
+
+    // Water body colour: turquoise shallows blended toward deep blue.
     vec3 color = mix(uDeep, uShallow, clamp(fresnel * 1.5 + 0.16, 0.0, 1.0));
 
-    vec3 sunDir = normalize(uSunDirection);
-    vec3 halfVec = normalize(sunDir + viewDir);
-    float spec = pow(max(dot(normal, halfVec), 0.0), 120.0);
-    color += vec3(1.0, 0.97, 0.88) * spec * 0.7;
+    // Sky reflection sampled in the reflected view direction - cheap, but it is
+    // what makes the surface read as water instead of glass.
+    vec3 reflDir = reflect(-viewDir, normal);
+    float reflHeight = clamp(reflDir.y, 0.0, 1.0);
+    vec3 skyRefl = mix(uHorizon, uZenith, pow(reflHeight, 0.55));
+    skyRefl += uSunColor * pow(max(dot(reflDir, sunDir), 0.0), 180.0) * 1.4;
+    color = mix(color, skyRefl, clamp(fresnel * 1.25, 0.0, 1.0));
 
+    // Sun glint: wide lobe for the path, tight lobe for the sparkle.
+    vec3 halfVec = normalize(sunDir + viewDir);
+    float spec = max(dot(normal, halfVec), 0.0);
+    color += uSunColor * (pow(spec, 240.0) * 1.1 + pow(spec, 900.0) * 3.0);
+
+    // Crest foam.
     float foam = smoothstep(0.46, 0.78, vWave + sin(vWorldPos.x * 0.35 + uTime * 0.8) * 0.05);
-    color = mix(color, vec3(0.93, 0.97, 0.98), foam * 0.22);
+    color = mix(color, vec3(0.93, 0.97, 0.98), foam * 0.25);
 
     float distanceToCamera = length(cameraPosition - vWorldPos);
     float haze = smoothstep(uFogNear, uFogFar * 1.5, distanceToCamera);
@@ -86,8 +112,11 @@ export function Ocean({ sunDirection = [0.55, 0.62, 0.36] }) {
       uTime: { value: 0 },
       uShallow: { value: new THREE.Color('#4bb6bb') },
       uDeep: { value: new THREE.Color(PALETTE.waterDeep) },
+      uZenith: { value: new THREE.Color('#3f86d8') },
+      uHorizon: { value: new THREE.Color(SKY_HORIZON) },
+      uSunColor: { value: new THREE.Color('#fff2d4') },
       uSunDirection: { value: new THREE.Vector3(...sunDirection).normalize() },
-      uHazeColor: { value: new THREE.Color('#bfe0f2') },
+      uHazeColor: { value: new THREE.Color(SKY_HORIZON) },
       uFogNear: { value: WORLD.fogNear * 1.5 },
       uFogFar: { value: WORLD.fogFar },
     }),

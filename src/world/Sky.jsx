@@ -39,11 +39,17 @@ const DOME_FRAGMENT = /* glsl */ `
     // Below the horizon fades into the ocean haze.
     color = mix(color, uGround, smoothstep(0.0, -0.09, height));
 
-    // Sun disc + wide glow.
-    float sunDot = max(dot(dir, normalize(uSunDirection)), 0.0);
+    // Sun disc + wide glow + a warm Rayleigh-style tint near the sun.
+    vec3 sunDir = normalize(uSunDirection);
+    float sunDot = max(dot(dir, sunDir), 0.0);
     float disc = smoothstep(0.9986, 0.9995, sunDot);
     float glow = pow(sunDot, 220.0) * 0.55 + pow(sunDot, 12.0) * 0.16;
     color += uSunColor * (disc * 1.2 + glow);
+    color = mix(color, uSunColor * 0.4 + color * 0.6, pow(sunDot, 4.0) * 0.35);
+
+    // Tropical haze band hugging the horizon (moist Indian Ocean air).
+    float hazeBand = exp(-abs(height) * 14.0) * 0.10;
+    color = mix(color, vec3(0.96, 0.98, 1.0), hazeBand);
 
     // Very light banding of high cirrus so the sky is not perfectly flat.
     float cirrus = sin(dir.x * 22.0 + uTime * 0.015) * sin(dir.z * 27.0 - uTime * 0.01);
@@ -78,13 +84,18 @@ export function SkyDome({ sunDirection = SUN.direction }) {
   return (
     <mesh scale={[1, 1, 1]} frustumCulled={false} renderOrder={-10} name="sky">
       <sphereGeometry args={[WORLD.fogFar * 2.4, 32, 20]} />
+      {/* toneMapped stays true on purpose: the shader's tonemapping include
+          applies the renderer's ACES when the scene renders straight to
+          screen (low preset) and stays inert inside the post composer's
+          render target (where the ToneMapping effect does it) - so every
+          quality tier grades the sky identically, and the horizon seam
+          against the fogged terrain stays seamless. */}
       <shaderMaterial
         vertexShader={DOME_VERTEX}
         fragmentShader={DOME_FRAGMENT}
         uniforms={uniforms}
         side={THREE.BackSide}
         depthWrite={false}
-        toneMapped={false}
       />
     </mesh>
   )
@@ -198,13 +209,7 @@ function CloudPuff({ texture, x, y, z, scale, opacity, drift }) {
     <Billboard position={[x, y, z]} userData={{ drift }}>
       <mesh scale={[scale, scale * 0.62, 1]} renderOrder={-5} frustumCulled={false}>
         <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial
-          map={texture}
-          transparent
-          opacity={opacity}
-          depthWrite={false}
-          toneMapped={false}
-        />
+        <meshBasicMaterial map={texture} transparent opacity={opacity} depthWrite={false} />
       </mesh>
     </Billboard>
   )

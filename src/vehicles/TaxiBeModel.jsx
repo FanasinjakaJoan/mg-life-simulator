@@ -46,10 +46,11 @@ export function TaxiBeModel({
           <mesh geometry={wheels} material={VEHICLE_MATERIAL_MATTE} castShadow />
         </group>
       ))}
-      {/* Under-body shadow catcher so the vehicle reads as grounded. */}
+      {/* Under-body shadow catcher so the vehicle reads as grounded even when
+          the real-time shadow frustum is at its softest. */}
       <mesh position={[0, -halfHeight + 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[halfWidth * 1.9, halfLength * 1.9]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.16} depthWrite={false} />
+        <meshBasicMaterial color="#000000" transparent opacity={0.1} depthWrite={false} />
       </mesh>
     </group>
   )

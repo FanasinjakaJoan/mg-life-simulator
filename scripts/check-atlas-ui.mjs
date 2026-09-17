@@ -60,6 +60,22 @@ try {
   await page.waitForFunction(() => !document.querySelector('.game-loading'), null, {
     timeout: 90000,
   })
+
+  // Graphics quality: P cycles the preset (post-processing on/off, shadow map
+  // size, pixel-ratio band). Each switch remounts parts of the render pipeline
+  // - any crash here would surface as a page error.
+  const qualityButton = page.getByRole('button', { name: /Qualité/ })
+  await qualityButton.waitFor({ timeout: 15000 })
+  await page.keyboard.press('p') // high -> low (composer unmounts)
+  await page.waitForTimeout(400)
+  assert.match(await qualityButton.textContent(), /Basse/, 'quality cycles to low')
+  await page.keyboard.press('p') // low -> medium (composer mounts)
+  await page.waitForTimeout(400)
+  assert.match(await qualityButton.textContent(), /Moyenne/, 'quality cycles to medium')
+  await page.keyboard.press('p') // medium -> high
+  await page.waitForTimeout(400)
+  assert.match(await qualityButton.textContent(), /Élevée/, 'quality cycles back to high')
+
   await page.getByRole('button', { name: /Retour à l’atlas/ }).click({ timeout: 30000 })
   assert.equal(await page.locator('h1').textContent(), 'Madagascar.')
   await page.setViewportSize({ width: 390, height: 844 })

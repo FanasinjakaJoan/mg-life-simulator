@@ -10,20 +10,28 @@ import { box, cone, cylinder, merge, sphere } from '../world/geometryUtils.js'
  */
 
 /**
- * Shared material for the taxi-bé meshes: the body and the wheels are merged,
+ * Shared materials for the taxi-bé meshes: the body and the wheels are merged,
  * vertex-coloured geometries, so without `vertexColors` three.js would ignore
  * the paint and render the whole bus white.
+ *
+ * The body is a physical material with a clearcoat layer - the thin glossy
+ * lacquer over the paint is what sells the "real car" read, together with the
+ * IBL environment reflections.
  */
-export const VEHICLE_MATERIAL = new THREE.MeshStandardMaterial({
+export const VEHICLE_MATERIAL = new THREE.MeshPhysicalMaterial({
   vertexColors: true,
-  roughness: 0.42,
-  metalness: 0.28,
+  roughness: 0.4,
+  metalness: 0.24,
+  clearcoat: 0.6,
+  clearcoatRoughness: 0.32,
+  envMapIntensity: 1.1,
 })
 
 export const VEHICLE_MATERIAL_MATTE = new THREE.MeshStandardMaterial({
   vertexColors: true,
   roughness: 0.85,
   metalness: 0.0,
+  envMapIntensity: 0.4,
 })
 
 const GLASS = '#3c4a52'
